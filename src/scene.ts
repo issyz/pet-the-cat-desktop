@@ -306,7 +306,7 @@ export class Scene {
     Object.assign(this.pointer, p, { inside: true, down: true });
     this.mode = "idle";
     if (!this.cat) return;
-    const s = this.tailHit(p);
+    const s = this.bodyAlphaAt(p) < 0.5 ? this.tailHit(p) : null;
     if (s !== null) {
       this.mode = "tail";
       this.tailPull.s0 = Math.max(0.35, s);
