@@ -20,7 +20,13 @@ const settings: Settings = (() => {
   }
 })();
 if (!CATS.some((c) => c.id === settings.cat)) settings.cat = defaults.cat;
-const save = () => localStorage.setItem(STORE, JSON.stringify(settings));
+const save = () => {
+  try {
+    localStorage.setItem(STORE, JSON.stringify(settings));
+  } catch {
+    // Storage may be unavailable; settings then last for this session only.
+  }
+};
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const stage = $<HTMLDivElement>("#stage");
