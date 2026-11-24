@@ -51,4 +51,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg --title "$GITHUB_REF_NAME" --generate-notes
+        run: |
+          DMG=(src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${DMG[@]}" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "${DMG[@]}" --title "$GITHUB_REF_NAME" --generate-notes
+          fi
