@@ -332,7 +332,7 @@ export class Scene {
       }
     }
     if (this.mode === "idle" && this.bodyAlphaAt(p) > 0.4) this.mode = "pet";
-    if (this.mode === "pet") this.stroke(p, dx, dy, L);
+    if (this.mode === "pet" && this.bodyAlphaAt(p) > 0.1) this.stroke(p, dx, dy, L);
   }
 
   private release() {
