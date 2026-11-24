@@ -663,10 +663,17 @@ export class Scene {
       push(l, top, 0, 0);
       push(r, top, 1, 0);
       if (sleeve) {
-        push(l, 0.985, 0, 0.985);
-        push(r, 0.985, 1, 0.985);
-        push(l, extend, 0, 0.995);
-        push(r, extend, 1, 0.995);
+        // Continue the sleeve off-screen by mirror-tiling its lower section.
+        const [s0, s1] = [0.86, 0.985];
+        push(l, s1, 0, s1);
+        push(r, s1, 1, s1);
+        let y = s1;
+        for (let flip = true; y < extend; flip = !flip) {
+          y += s1 - s0;
+          const v = flip ? s0 : s1;
+          push(l, y, 0, v);
+          push(r, y, 1, v);
+        }
       } else {
         push(l, bottom, 0, 1);
         push(r, bottom, 1, 1);
