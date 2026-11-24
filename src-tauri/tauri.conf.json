@@ -39,7 +39,9 @@
     "category": "Entertainment",
     "shortDescription": "Pet a cat on your desktop",
     "macOS": {
-      "minimumSystemVersion": "12.0"
-    }
+      "minimumSystemVersion": "12.0",
+      "signingIdentity": "-"
+    },
+    "copyright": "Copyright © 2026 Pet the Cat Desktop"
   }
 }

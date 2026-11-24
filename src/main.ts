@@ -4,14 +4,14 @@ import { Scene } from "./scene";
 
 const STORE = "pet-the-cat-settings";
 interface Settings {
-  theme: "light" | "dark";
+  theme: "light" | "dark" | null;
   cat: string;
   size: number;
   width: number;
   sound: boolean;
 }
 
-const defaults: Settings = { theme: "light", cat: "kuro", size: 5, width: 5, sound: false };
+const defaults: Settings = { theme: null, cat: "kuro", size: 5, width: 5, sound: false };
 const settings: Settings = (() => {
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(STORE) ?? "{}") };
@@ -64,12 +64,17 @@ function createScene() {
   }
 }
 
+const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
+const currentTheme = () => settings.theme ?? (systemDark.matches ? "dark" : "light");
+
 function applyTheme() {
-  const dark = settings.theme === "dark";
-  document.documentElement.dataset.theme = settings.theme;
+  const theme = currentTheme();
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = theme;
   themeBtn.setAttribute("aria-checked", String(dark));
   scene.setDark(dark);
 }
+systemDark.addEventListener("change", applyTheme);
 
 function applyProportions() {
   sizeInput.value = String(settings.size);
@@ -104,7 +109,7 @@ for (const cat of CATS) {
 }
 
 themeBtn.addEventListener("click", () => {
-  settings.theme = settings.theme === "dark" ? "light" : "dark";
+  settings.theme = currentTheme() === "dark" ? "light" : "dark";
   save();
   applyTheme();
 });
