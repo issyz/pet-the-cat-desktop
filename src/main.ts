@@ -196,10 +196,12 @@ selectCat(settings.cat);
 soundBtn.setAttribute("aria-checked", String(settings.sound));
 if (settings.sound) {
   const resume = () => {
-    purr.setEnabled(true);
+    purr.setEnabled(settings.sound);
     window.removeEventListener("pointerdown", resume);
+    window.removeEventListener("keydown", resume);
   };
   window.addEventListener("pointerdown", resume);
+  window.addEventListener("keydown", resume);
 }
 stage.focus();
 tick();
