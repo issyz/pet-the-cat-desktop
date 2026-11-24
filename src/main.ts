@@ -47,14 +47,14 @@ const scene = createScene();
 function createScene() {
   try {
     return new Scene($<HTMLCanvasElement>("#scene"), {
-  onReady: () => {
-    stage.dataset.ready = "true";
-    retry.hidden = true;
-  },
-  onError: (err) => {
-    console.error(err);
-    retry.hidden = false;
-  },
+      onReady: () => {
+        stage.dataset.ready = "true";
+        retry.hidden = true;
+      },
+      onError: (err) => {
+        console.error(err);
+        retry.hidden = false;
+      },
     });
   } catch (err) {
     stage.dataset.ready = "true";
