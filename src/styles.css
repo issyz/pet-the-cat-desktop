@@ -72,6 +72,8 @@ main {
 #stage[data-ready="true"] #loading { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.error { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #453327; font-size: 15px; }
+
 #retry { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
 
 .icon-button {

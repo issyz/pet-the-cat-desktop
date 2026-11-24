@@ -42,7 +42,11 @@ const widthInput = $<HTMLInputElement>("#cat-width");
 const choices = $<HTMLDivElement>(".choices");
 
 const purr = new Purr();
-const scene = new Scene($<HTMLCanvasElement>("#scene"), {
+const scene = createScene();
+
+function createScene() {
+  try {
+    return new Scene($<HTMLCanvasElement>("#scene"), {
   onReady: () => {
     stage.dataset.ready = "true";
     retry.hidden = true;
@@ -51,7 +55,14 @@ const scene = new Scene($<HTMLCanvasElement>("#scene"), {
     console.error(err);
     retry.hidden = false;
   },
-});
+    });
+  } catch (err) {
+    stage.dataset.ready = "true";
+    stage.dataset.error = "true";
+    stage.append(Object.assign(document.createElement("p"), { className: "error", textContent: "无法启动图形渲染（需要 WebGL2）。" }));
+    throw err;
+  }
+}
 
 function applyTheme() {
   const dark = settings.theme === "dark";
