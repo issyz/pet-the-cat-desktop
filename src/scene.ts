@@ -32,6 +32,8 @@ uniform vec4 u_rect;
 uniform sampler2D u_nap;
 uniform float u_time;
 uniform float u_disp;
+uniform vec2 u_press;   // stroking hand position, in body UV
+uniform float u_dent;   // 0..1: how much the body yields under the hand
 out vec2 v_uv;
 void main() {
   v_uv = a_uv;
@@ -39,7 +41,14 @@ void main() {
   vec2 d = n.rg * 2.0 - 1.0;
   vec2 p = a_uv;
   float breathe = sin(u_time * 1.9) * 0.014 * max(0.0, 1.0 - abs(a_uv.x - 0.6) * 1.4);
-  p.y = 0.5 + (p.y - 0.5) * (1.0 + breathe);
+  // While being petted the whole body relaxes a touch flatter...
+  p.y = 0.5 + (p.y - 0.5) * (1.0 + breathe - 0.02 * u_dent);
+  // ...and yields with a soft local depression right under the hand, so the
+  // body itself gently reacts to the stroke (not just the fur).
+  vec2 toP = a_uv - u_press;
+  float dent = u_dent * exp(-dot(toP, toP) * 24.0);
+  p -= toP * dent * 0.16;
+  p.y += dent * 0.015;
   vec2 pos = u_rect.xy + p * u_rect.zw + d * u_disp;
   vec2 c = pos / u_res * 2.0 - 1.0;
   gl_Position = vec4(c.x, -c.y, 0.0, 1.0);
@@ -129,6 +138,7 @@ export class Scene {
   private mode: Mode = "idle";
   private handAlpha = 0;
   private handPress = 0;
+  private bodyDent = 0;
   private energy = 0;
   private tailPull = { w: 0, v: 0, s0: 0.6, tip: { x: 0, y: 0 } as Vec };
   private tailPoints: Vec[] = [];
@@ -448,6 +458,8 @@ export class Scene {
     this.handAlpha += (target - this.handAlpha) * Math.min(1, dt * 10);
     const pressTarget = this.pointer.down ? 1 : 0;
     this.handPress += (pressTarget - this.handPress) * Math.min(1, dt * 14);
+    const dentTarget = this.pointer.down && this.mode === "pet" ? 1 : 0;
+    this.bodyDent += (dentTarget - this.bodyDent) * Math.min(1, dt * 10);
 
     const tp = this.tailPull;
     if (this.mode === "tail") {
@@ -622,6 +634,8 @@ export class Scene {
     gl.uniform1f(gl.getUniformLocation(p, "u_time"), this.time);
     gl.uniform1f(gl.getUniformLocation(p, "u_disp"), L.bodyW * 0.018);
     gl.uniform2f(gl.getUniformLocation(p, "u_comb"), 0.014, (0.014 * L.bodyW) / L.bodyH);
+    gl.uniform2f(gl.getUniformLocation(p, "u_press"), (this.pointer.x - L.left) / L.bodyW, (this.pointer.y - L.top) / L.bodyH);
+    gl.uniform1f(gl.getUniformLocation(p, "u_dent"), this.bodyDent);
     const k = this.dark ? [0.4, 0.46, 0.62] : [1, 1, 1];
     gl.uniform3f(gl.getUniformLocation(p, "u_tint"), k[0], k[1], k[2]);
     gl.activeTexture(gl.TEXTURE0);
