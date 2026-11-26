@@ -63,9 +63,15 @@ void main() {
   vec2 off = d * u_comb;
   vec4 comb = (texture(u_tex, v_uv - off) + texture(u_tex, v_uv - off * 2.0)) * 0.5;
   vec3 baseC = unpremul(base, vec3(0.0));
-  vec3 col = mix(baseC, unpremul(comb, baseC), clamp(comb.a * 1.2, 0.0, 1.0) * smoothstep(0.0, 0.2, len));
+  vec3 col = mix(baseC, unpremul(comb, baseC), clamp(comb.a * 1.2, 0.0, 1.0) * smoothstep(0.0, 0.15, len));
   float sheen = dot(d, vec2(0.8, 0.6));
-  col *= 1.0 + 0.16 * sheen - 0.14 * press;
+  col *= 1.0 + 0.30 * sheen - 0.18 * press;
+  // Additive parting highlight. A purely multiplicative sheen is invisible on
+  // black fur (black * k == black), so add a directional grey sheen + shadow
+  // that reads on any coat wherever the fur has actually been stroked.
+  float lift = smoothstep(0.04, 0.55, len);
+  col += vec3(max(0.0, 0.16 * lift * (0.45 + 0.55 * sheen)) - 0.07 * press * lift);
+  col = max(col, vec3(0.0));
   o = vec4(col * u_tint * base.a, base.a);
 }`;
 
@@ -428,7 +434,7 @@ export class Scene {
 
   private step(dt: number) {
     this.runAuto(dt);
-    const decay = Math.exp(-dt / 9);
+    const decay = Math.exp(-dt / 4);
     const pressDecay = Math.exp(-dt / 0.35);
     for (let i = 0; i < this.nap.length; i += 3) {
       this.nap[i] *= decay;
@@ -614,8 +620,8 @@ export class Scene {
     gl.uniform2f(gl.getUniformLocation(p, "u_res"), this.w, this.h);
     gl.uniform4f(gl.getUniformLocation(p, "u_rect"), L.left, L.top, L.bodyW, L.bodyH);
     gl.uniform1f(gl.getUniformLocation(p, "u_time"), this.time);
-    gl.uniform1f(gl.getUniformLocation(p, "u_disp"), L.bodyW * 0.006);
-    gl.uniform2f(gl.getUniformLocation(p, "u_comb"), 0.006, (0.006 * L.bodyW) / L.bodyH);
+    gl.uniform1f(gl.getUniformLocation(p, "u_disp"), L.bodyW * 0.018);
+    gl.uniform2f(gl.getUniformLocation(p, "u_comb"), 0.014, (0.014 * L.bodyW) / L.bodyH);
     const k = this.dark ? [0.4, 0.46, 0.62] : [1, 1, 1];
     gl.uniform3f(gl.getUniformLocation(p, "u_tint"), k[0], k[1], k[2]);
     gl.activeTexture(gl.TEXTURE0);
